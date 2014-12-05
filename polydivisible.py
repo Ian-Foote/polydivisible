@@ -1,12 +1,20 @@
+from functools import lru_cache
 import itertools
 
 
-def sequence_to_integer(sequence, base):
-    """Convert a sequence of digits into an integer using the given base."""
-    num_digits = len(sequence)
-    exponents = reversed(range(num_digits))
-    powers = (base ** exponent for exponent in exponents)
-    return sum(digit * power for digit, power in zip(sequence, powers))
+@lru_cache()
+def mask(base, divisor):
+    return list(reversed([pow(base, power, divisor) for power in range(divisor)]))
+
+
+def divisible(sequence, base):
+    """Check if a sequence is divisible by its length in the given base."""
+    divisor = len(sequence)
+    if base % divisor == 0:
+        return sequence[-1] % divisor == 0
+
+    components = (digit * r for digit, r in zip(sequence, mask(base, divisor)))
+    return sum(components) % divisor == 0
 
 
 def search(base, current_sequence=None):
@@ -25,12 +33,10 @@ def search(base, current_sequence=None):
             yield from search(base, (digit,))
         return  # We've found all possible polydivisible numbers
 
-    divisor = len(current_sequence)
-    number = sequence_to_integer(current_sequence, base)
-    if number % divisor:
-        return  # The current_sequence is not polydivisible
+    if not divisible(current_sequence, base):
+        return
 
-    if divisor == base - 1:
+    if len(current_sequence) == base - 1:
         # We've found a polydivisible number, so yield it and return
         yield current_sequence
         return
@@ -43,5 +49,5 @@ def search(base, current_sequence=None):
 
 
 if __name__ == '__main__':
-    for base in range(21):
+    for base in range(2, 21):
         print(base, list(search(base)))
