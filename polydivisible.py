@@ -1,3 +1,5 @@
+from collections import defaultdict
+from fractions import gcd
 from functools import lru_cache
 import itertools
 
@@ -17,6 +19,15 @@ def divisible(sequence, base):
     return sum(components) % divisor == 0
 
 
+@lru_cache(maxsize=1)
+def greatest_common_divisors(base):
+    """Partition digits by their greatest common divisor with base."""
+    factors = defaultdict(set)
+    for i in range(1, base):
+        factors[gcd(i, base)].add(i)
+    return factors
+
+
 def search(base, current_sequence=None):
     """
     Find all polydivisible numbers using all digits in the given base.
@@ -26,9 +37,10 @@ def search(base, current_sequence=None):
 
     We use a recursive backtracking algorithm to search the possibilities.
     """
+    factors = greatest_common_divisors(base)
 
     if current_sequence is None:
-        for digit in range(1, base):
+        for digit in factors[1]:
             # Start our search with sequences of one digit
             yield from search(base, (digit,))
         return  # We've found all possible polydivisible numbers
@@ -36,13 +48,14 @@ def search(base, current_sequence=None):
     if not divisible(current_sequence, base):
         return
 
-    if len(current_sequence) == base - 1:
+    next_divisor = len(current_sequence) + 1
+    if next_divisor == base:
         # We've found a polydivisible number, so yield it and return
         yield current_sequence
         return
 
     # Extend our current_sequence with an available digit and continue search
-    for digit in range(1, base):
+    for digit in factors[gcd(next_divisor, base)]:
         if digit in current_sequence:
             continue
         yield from search(base, current_sequence + (digit,))
