@@ -65,8 +65,16 @@ class Polydivisible:
         components = (digit * r for digit, r in digit_powers)
         return sum(components) % divisor == 0
 
+    def as_list(self):
+        """Return a list of all polydivisible sequences."""
+        return list(self.search())
+
+    def as_set(self):
+        """Return a set of all polydivisible sequences."""
+        return set(self.search())
+
 
 if __name__ == '__main__':  # pragma: nocover
     for base in range(2, 21):
         poly = Polydivisible(base)
-        print(base, list(poly.search()))
+        print(base, poly.as_list())
