@@ -66,7 +66,7 @@ class Polydivisible:
         return sum(components) % divisor == 0
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: nocover
     for base in range(2, 21):
         poly = Polydivisible(base)
         print(base, list(poly.search()))
