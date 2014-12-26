@@ -26,6 +26,9 @@ class Polydivisible:
         """
 
         if current_sequence is None:
+            if self.base % 2:  # Odd bases cannot have polydivisible numbers
+                return
+
             for digit in self.factors[1]:
                 # Start our search with sequences of one digit
                 yield from self.search((digit,), digit)
@@ -56,6 +59,6 @@ class Polydivisible:
 
 
 if __name__ == '__main__':  # pragma: nocover
-    for base in range(2, 21):
+    for base in range(2, 41):
         poly = Polydivisible(base)
         print(base, poly.as_list())
