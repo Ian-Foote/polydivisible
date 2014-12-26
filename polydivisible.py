@@ -1,5 +1,15 @@
-from collections import defaultdict
+from collections import Counter, defaultdict
 from fractions import gcd
+
+
+def coroutine(func):
+    """Start a coroutine when first called."""
+    def start(*args, **kwargs):
+        """Call the coroutine `func` and call `next` on it to start."""
+        cr = func(*args, **kwargs)
+        next(cr)
+        return cr
+    return start
 
 
 def greatest_common_divisors(base):
@@ -11,9 +21,20 @@ def greatest_common_divisors(base):
 
 
 class Polydivisible:
-    def __init__(self, base):
+    def __init__(self, base, debug=False):
         self.base = base
         self.factors = greatest_common_divisors(base)
+        self.debug = debug
+        self._count = self.count_terminating_sequences()
+
+    @property
+    def debug(self):
+        return self._debug
+
+    @debug.setter
+    def debug(self, value):
+        self._debug = value
+        self.counter = Counter()
 
     def search(self, current_sequence=None, number=None):
         """
@@ -38,6 +59,8 @@ class Polydivisible:
         if next_divisor == self.base:
             # We've found a polydivisible number, so yield it and return
             yield current_sequence
+            if self.debug:
+                self._count.send(next_divisor)
             return
 
         number *= self.base
@@ -48,6 +71,8 @@ class Polydivisible:
             next_number = number + digit
             if next_number % next_divisor == 0:
                 yield from self.search(current_sequence + (digit,), next_number)
+            elif self.debug:
+                self._count.send(next_divisor)
 
     def as_list(self):
         """Return a list of all polydivisible sequences."""
@@ -56,6 +81,12 @@ class Polydivisible:
     def as_set(self):
         """Return a set of all polydivisible sequences."""
         return set(self.search())
+
+    @coroutine
+    def count_terminating_sequences(self):
+        while True:
+            sequence_length = yield
+            self.counter[sequence_length] += 1
 
 
 if __name__ == '__main__':  # pragma: nocover
